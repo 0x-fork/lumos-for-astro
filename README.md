@@ -53,14 +53,6 @@ Node 22.12 or newer is required.
 Component reference, styling guides and examples are at
 [lumosframework.com](https://lumosframework.com).
 
-## Contributing
-
-Read
-[CONTRIBUTING.md](https://github.com/lumosframework/lumos-for-astro/blob/main/CONTRIBUTING.md)
-first — a pull request needs the
-[CLA](https://github.com/lumosframework/lumos-for-astro/blob/main/CLA.md)
-signed before it can be merged.
-
 ## License
 
 [MIT](LICENSE)
