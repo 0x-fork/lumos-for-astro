@@ -107,6 +107,28 @@ function die(message) {
   exit(1);
 }
 
+function requireSupportedNode(requirement) {
+  const required = /^>=(\d+)\.(\d+)\.(\d+)$/
+    .exec(requirement)
+    ?.slice(1)
+    .map(Number);
+  if (!required) return;
+
+  const current = process.versions.node.split(".").map(Number);
+  let comparison = 0;
+  for (let index = 0; index < required.length; index++) {
+    if (current[index] === required[index]) continue;
+    comparison = current[index] > required[index] ? 1 : -1;
+    break;
+  }
+
+  if (comparison < 0) {
+    die(
+      `This Lumos template requires Node ${required.join(".")} or newer. You are running ${process.versions.node}.`,
+    );
+  }
+}
+
 /**
  * Walk a tar archive, yielding one entry per stored file.
  *
@@ -216,9 +238,17 @@ async function main() {
   const tar = gunzipSync(Buffer.from(await res.arrayBuffer()));
   console.log(green("done"));
 
+  const entries = [...readTar(tar)];
+  const packageEntry = entries.find(
+    (entry) => entry.path === "package.json" && entry.data,
+  );
+  if (!packageEntry) die("The template archive has no package.json.");
+  const templatePackage = JSON.parse(packageEntry.data.toString("utf8"));
+  requireSupportedNode(templatePackage.engines?.node);
+
   stdout.write(dim("Writing files... "));
   let count = 0;
-  for (const entry of readTar(tar)) {
+  for (const entry of entries) {
     const dest = join(dir, entry.path);
     // An archive entry should never be able to write outside the target.
     if (dest !== dir && !dest.startsWith(dir + sep)) {
